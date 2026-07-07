@@ -1,0 +1,12 @@
+.env
+data/
+results/
+models/
+*.joblib
+*.pth
+*.pt
+*.xlsx
+*.log
+__pycache__/
+.DS_Store
+
