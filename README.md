@@ -17,6 +17,7 @@ The goal is to understand how each model learns the relationship between network
 .
 ├── README.md
 ├── docs/
+│   ├── 00-korean-overview.md
 │   ├── 01-system-overview.md
 │   ├── 02-random-forest-tasador.md
 │   ├── 03-mlp-regression.md
@@ -51,6 +52,10 @@ This repository includes both the original script structure and cleaned reproduc
 - `scripts/` contains cleaner templates/wrappers for future reproduction.
 
 If you want to show what was actually done, point readers to [src/README.md](src/README.md). If you want to rerun a simplified version, start from `scripts/`.
+
+## Korean Overview
+
+한국어 설명은 [docs/00-korean-overview.md](docs/00-korean-overview.md)에 정리되어 있습니다.
 
 ## High-Level Workflow
 
