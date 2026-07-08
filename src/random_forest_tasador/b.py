@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 import joblib
 import joblib
-from op${NET_IFACE} import Workbook,load_workbook
+from openpyxl import Workbook,load_workbook
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor

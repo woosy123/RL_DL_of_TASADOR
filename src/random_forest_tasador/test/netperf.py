@@ -17,7 +17,7 @@ for i in range(0, 4):
 #    print(quota, msg)
     os.system("sudo ./set_quota.sh %s" %quota)
     # Execute netperf and record the result
-    cmd = '"/home/v1/test.sh {} {}" &'.format(time, msg)
+    cmd = '"${VM_WORKLOAD_SCRIPT:-~/test.sh} {} {}" &'.format(time, msg)
     os.system("sudo ssh -i "${VM_SSH_KEY:-~/.ssh/id_rsa}" ${VM_USER}@${VM_HOST} " +cmd)
     for j in range(0, 5):
         os.system("sudo vnstat -i ${NET_IFACE} -tr 30 >> vn_{}_{}.txt &".format(msg, goal))

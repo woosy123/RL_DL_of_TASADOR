@@ -100,6 +100,20 @@ python3 src/random_forest_tasador/evaluate_modelG_any.py
 python3 src/random_forest_tasador/evaluate_modelH_any.py
 ```
 
+파일별 의미:
+
+| 파일 | 의미 |
+|---|---|
+| `generate_modelG_any.py` | Model-G 학습. message size와 target throughput으로 VM CPU usage를 예측하는 Random Forest를 만든다. |
+| `generate_modelH_any.py` | Model-H 학습. message size, throughput, PPS, VM CPU usage로 Host CPU quota를 예측하는 Random Forest를 만든다. |
+| `evaluate_modelG_any.py` | 학습된 Model-G가 VM CPU usage를 얼마나 잘 예측하는지 RMSE/RMSLE로 확인한다. |
+| `evaluate_modelH_any.py` | 학습된 Model-H가 CPU quota를 얼마나 잘 예측하는지 RMSE/RMSLE로 확인한다. |
+| `run_model.sh` | Model-G와 Model-H 학습을 연속 실행하고 training time 로그를 뽑는다. |
+| `test/collect.sh` | 모델 학습 전 quota sweep raw log를 수집한다. |
+| `test/set_quota.sh` | host cgroup에 CPU quota를 적용한다. |
+| `tc/run.sh`, `tc/default.sh` | traffic control baseline 실험을 실행한다. |
+| `share/run.sh`, `share/default.sh` | vCPU share/priority baseline 실험을 실행한다. |
+
 ### 실험 목적
 
 Random Forest가 bandwidth-to-CPU 관계의 비선형성을 잘 잡는지 확인한다. TASADOR 논문에서는 Linear Regression, SVR과 비교했을 때 Random Forest가 더 낮은 RMSE/RMSLE를 보여 core model로 선택된다.

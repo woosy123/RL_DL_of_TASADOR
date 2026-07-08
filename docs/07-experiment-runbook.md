@@ -126,6 +126,20 @@ cd src/random_forest_tasador
 bash run_model.sh
 ```
 
+File-level meaning:
+
+| File | What it does |
+|---|---|
+| `generate_modelG_any.py` | Trains Model-G, which predicts VM CPU usage from message size and target throughput |
+| `generate_modelH_any.py` | Trains Model-H, which predicts Host CPU quota from message size, throughput, PPS, and VM CPU usage |
+| `evaluate_modelG_any.py` | Evaluates the trained Model-G against held-out or split measurement data |
+| `evaluate_modelH_any.py` | Evaluates the trained Model-H and reports CPU quota prediction error |
+| `run_model.sh` | Runs Model-G and Model-H training and extracts training-time logs |
+| `test/collect.sh` | Collects raw quota-sweep measurement logs before model training |
+| `test/set_quota.sh` | Applies a quota to the host cgroup path |
+| `tc/run.sh`, `tc/default.sh` | Runs traffic-control baseline experiments |
+| `share/run.sh`, `share/default.sh` | Runs vCPU-share/priority baseline experiments |
+
 Sanitized template:
 
 ```bash

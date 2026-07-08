@@ -154,7 +154,7 @@ except:
 # 새로운 보상을 엑셀에 추가하는 함수
 def add_reward(episode, reward, time):
     df.loc[len(df)] = [episode, reward, time]
-    df.to_excel(excel_file, sheet_name=sheet_name, index=False, engine="op${NET_IFACE}")
+    df.to_excel(excel_file, sheet_name=sheet_name, index=False, engine="openpyxl")
 
 
 

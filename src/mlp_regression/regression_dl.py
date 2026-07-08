@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
-import op${NET_IFACE}
+import openpyxl
 import pandas as pd
 import os
 import time
@@ -110,7 +110,7 @@ except:
 # 새로운 보상을 엑셀에 추가하는 함수
 def add_reward(epoch, reward, time):
     df.loc[len(df)] = [epoch, reward, time]
-    df.to_excel(excel_file, sheet_name=sheet_name, index=False, engine="op${NET_IFACE}")
+    df.to_excel(excel_file, sheet_name=sheet_name, index=False, engine="openpyxl")
 
 add_reward(num_epochs,round(rmse,4),(stop-start))
 
@@ -118,8 +118,8 @@ print(stop-start)
 now_time = time.localtime()
 
 #if not os.path.exists(f'result_{num_epochs}.xlsx'):
-#    with pd.ExcelWriter(f'result_{num_epochs}.xlsx', mode='w', engine='op${NET_IFACE}') as writer:
+#    with pd.ExcelWriter(f'result_{num_epochs}.xlsx', mode='w', engine='openpyxl') as writer:
 #        data.to_excel(writer, sheet_name=f'epoch {num_epochs}, {time.strftime("%Y-%m-%d %H%M%S", now_time)}')
 #else:
-#    with pd.ExcelWriter(f'result_{num_epochs}.xlsx', mode='a', engine='op${NET_IFACE}') as writer:
+#    with pd.ExcelWriter(f'result_{num_epochs}.xlsx', mode='a', engine='openpyxl') as writer:
 #        data.to_excel(writer, sheet_name=f'epoch {num_epochs}, {time.strftime("%Y-%m-%d %H%M%S", now_time)}')

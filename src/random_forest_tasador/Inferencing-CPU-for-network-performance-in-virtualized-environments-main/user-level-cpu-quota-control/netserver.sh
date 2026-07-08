@@ -1,5 +1,5 @@
 # pip install --upgrade pip
-# pip install op${NET_IFACE}
+# pip install openpyxl
 # pip install pandas
 # generate data: input.csv [cpu quota]
 PATH=~/Desktop/Inferencing-CPU-for-network-performance-in-virtualized-environments/user-level-cpu-quota-control

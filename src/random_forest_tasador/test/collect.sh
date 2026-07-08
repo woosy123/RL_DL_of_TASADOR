@@ -4,7 +4,7 @@ VHOST=`pgrep vhost`
 DIR="${EXPERIMENT_ROOT}"
 for k in 64 128 256 512 1024
 do
-	sudo ssh -i "${VM_SSH_KEY:-~/.ssh/id_rsa}" ${VM_USER}@${VM_HOST} "/home/v1/test.sh 330 $k" &
+	sudo ssh -i "${VM_SSH_KEY:-~/.ssh/id_rsa}" ${VM_USER}@${VM_HOST} "${VM_WORKLOAD_SCRIPT:-~/test.sh} 330 $k" &
 	VN="vn_$k"
 	PID="pid_$k"
 	for i in $(seq 1 9)
