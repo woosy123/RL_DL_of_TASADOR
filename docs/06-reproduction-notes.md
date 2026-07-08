@@ -40,6 +40,8 @@ Do not commit:
 
 ## Suggested Experiment Order
 
+For detailed commands, see [07-experiment-runbook.md](07-experiment-runbook.md).
+
 1. Collect quota sweep data.
 2. Train Random Forest models.
 3. Train MLP regression model.
@@ -59,4 +61,3 @@ normalized_bandwidth = measured_throughput / target_throughput
 - Add a `requirements.txt` or `pyproject.toml`.
 - Add small anonymized sample data under `data/sample/`.
 - Add plots for RMSE, normalized bandwidth, and training time.
-

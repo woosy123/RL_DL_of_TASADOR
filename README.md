@@ -21,7 +21,8 @@ The goal is to understand how each model learns the relationship between network
 │   ├── 03-mlp-regression.md
 │   ├── 04-rl-dqn.md
 │   ├── 05-few-shot-tasador.md
-│   └── 06-reproduction-notes.md
+│   ├── 06-reproduction-notes.md
+│   └── 07-experiment-runbook.md
 ├── src/
 │   ├── random_forest_tasador/
 │   ├── mlp_regression/
@@ -110,9 +111,10 @@ workload,vcpu,cpu_model,mem_gb,nic_gbps,switch_gbps,cpu_quota,message_size,netwo
    - [MLP Regression](docs/03-mlp-regression.md)
    - [RL DQN](docs/04-rl-dqn.md)
    - [Few-shot TASADOR](docs/05-few-shot-tasador.md)
-3. Copy `configs/.env.example` to `.env` only on a private machine.
-4. Fill `.env` with local VM and host settings.
-5. Use scripts under `scripts/` as sanitized templates, not as direct drop-in production code.
+3. Read [docs/07-experiment-runbook.md](docs/07-experiment-runbook.md) for the purpose, execution flow, commands, and outputs of each experiment.
+4. Copy `configs/.env.example` to `.env` only on a private machine.
+5. Fill `.env` with local VM and host settings.
+6. Use scripts under `scripts/` as sanitized templates, not as direct drop-in production code.
 
 ## Important Reproduction Notes
 
