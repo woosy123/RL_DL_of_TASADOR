@@ -165,6 +165,8 @@ Train a PyTorch MLP to predict CPU quota directly from network and VM metrics. T
 input_dim -> 64 -> 32 -> 32 -> 16 -> 8 -> 1
 ```
 
+The six-layer structure was selected after comparing different numbers of Linear/ReLU blocks. RMSE was used as the model-selection metric, and the six-linear-layer version produced the lowest RMSE among the tested structures.
+
 Input:
 
 ```text
@@ -192,6 +194,14 @@ python3 predict_netperf.py
 ```
 
 The first script trains/evaluates the MLP. The prediction script generates quota predictions for target network SLOs. The netperf evaluation script applies those predicted quotas and measures actual throughput.
+
+The epoch sweep was used to compare model quality and training cost. The experiment notes compare epoch values such as:
+
+```text
+200, 400, 600, 800, 1000, 1200
+```
+
+The expected output from this sweep is an RMSE/training-time table or plot. In the observed notes, 1200 epochs produced the lowest RMSE among the compared epoch settings, so the 1200-epoch checkpoint was used for actual-performance comparison against TASADOR.
 
 Sanitized training template:
 
@@ -221,6 +231,8 @@ normalized bandwidth
 ### Why It Matters
 
 The MLP can learn nonlinear relationships, but CPU quota prediction becomes unstable when the same throughput appears at multiple quota values due to saturation or VM/network behavior.
+
+The 1-vCPU case showed this problem more clearly than the 8-vCPU case. Because the maximum network throughput is lower and saturation appears earlier, similar throughput values may correspond to several quota values. This makes direct quota regression harder and explains why the DL baseline can have wider normalized-bandwidth variation than TASADOR.
 
 ## 4. RL / DQN Experiment
 
@@ -266,6 +278,20 @@ bash set_cpu.sh
 python3 DQN1.py
 ```
 
+Each episode has up to 30 steps. At every step, the agent chooses whether to keep quota, decrease quota by 1000, or increase quota by 1000. The environment then measures throughput and gives reward based on distance from the target SLO.
+
+Episode-level experiment variables:
+
+```text
+number of episodes
+initial CPU quota
+target network SLO
+message size
+1-vCPU vs 8-vCPU environment
+```
+
+The experiment notes describe 300-episode runs for both 1-vCPU and 8-vCPU settings. The purpose was to observe whether average reward improves over episodes and whether normalized bandwidth approaches 1.0.
+
 Supporting scripts:
 
 ```text
@@ -288,6 +314,8 @@ VM CPU usage per episode
 ### Notes
 
 The original RL experiment depends on external processes. The quota loop, workload generator, and metric collection must be running consistently. This makes RL more sensitive to initial quota, target SLO, and timing than the offline RF/MLP experiments.
+
+The main interpretation from the RL runs is that DQN can reach good normalized bandwidth under carefully chosen initial conditions, but it does not consistently outperform the offline TASADOR-style approach. If the initial quota or SLO is poorly chosen, the agent can spend many episodes receiving large negative rewards without finding the correct quota region.
 
 ## 5. Few-Shot / Meta-Learning Extension
 
