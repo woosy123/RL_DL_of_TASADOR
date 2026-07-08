@@ -195,8 +195,6 @@ class RNNFewShot(nn.Module):
 
     # embedding + fully-connected layer
     def forward(self, input, labels):
-        # input: (batch, D) 혹은 (1, D) 형태로 들어온다고 가정 (현재 batch_size=1)
-        # shot 부분만 잘라서 (batch, K, NUM_FEATURES_PER_SHOT)로 reshape
         batch_size = input.size(0)
         x = input[:, :NUM_FEATURES_PER_SHOT * self.K].float()
         x = x.view(batch_size, self.K, NUM_FEATURES_PER_SHOT)
@@ -206,7 +204,6 @@ class RNNFewShot(nn.Module):
             hidden = hidden.to(input.device)
 
         output, h = self.gru(x, hidden)   # h: (directions*num_layers, batch, hidden_size)
-        # 마지막 hidden을 embedding으로 사용 (원래 코드가 x에 hidden을 받았던 의도)
         emb = h.transpose(0, 1).contiguous().view(batch_size, 1, -1)  # (batch, 1, directions*num_layers*hidden)
 
         if FEED_BOTH_SAMPLE_FEATURES_AND_CONFIGS_TO_PREDICT:
@@ -228,7 +225,7 @@ class RNNFewShot(nn.Module):
     
     def get_embedding(self, input):
         """
-        FLASH 메타 러너(GRU)를 통과하여 현재 시스템 상태를 요약한 임베딩 벡터만 추출합니다.
+
         """
         batch_size = input.size(0)
         x = input[:, :NUM_FEATURES_PER_SHOT * self.K].float()

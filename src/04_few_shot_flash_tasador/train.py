@@ -157,12 +157,10 @@ def main():
     parser.add_argument('--skip_embedding', action='store_true')
     parser.add_argument('--cuda', action='store_true')
 
-    # ===== TASADOR 파일 분리용 옵션 =====
     parser.add_argument('--data_root', type=str, default='.')
     parser.add_argument('--train_csv', type=str, default='tasador_dataset.csv')
     parser.add_argument('--test_csv', type=str, default='tasador_config2.csv')
 
-    # ===== (추가) support/query 샘플링 옵션 =====
     parser.add_argument(
         '--support_strategy',
         type=str,
@@ -186,7 +184,6 @@ def main():
 
     options = parser.parse_args()
 
-    # (로그) 샘플링 옵션 확인
     print("[INFO] support_strategy:", options.support_strategy,
           "| query_strategy:", options.query_strategy,
           "| max_queries_per_group:", options.max_queries_per_group)
@@ -206,7 +203,6 @@ def main():
     tr_dataloader, val_dataloader, test_dataloader, _ = init_dataset(options)
     print('Dataset initialized!')
 
-    # Sizeless baseline일 때는 실제 x 차원으로 FC 입력 크기 고정
     if options.dataset == 'tasador' and options.skip_embedding:
         sample_x, _ = next(iter(tr_dataloader))
         options.num_features_override = int(sample_x.shape[-1])
@@ -225,7 +221,6 @@ def main():
          test_dataloader=test_dataloader,
          model=model)
 
-    # (주의) val_dataloader가 None이면 best_state가 None일 수 있음
     if best_state is not None:
         model.load_state_dict(best_state)
         print('Testing with best model..')

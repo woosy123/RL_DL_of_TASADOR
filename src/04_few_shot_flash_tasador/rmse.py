@@ -7,12 +7,10 @@ def extract_rmse(metrics_path):
     with open(metrics_path, 'r', encoding='utf-8') as f:
         text = f.read().strip()
 
-    # 형식 1: RMSE,123.456
     m = re.search(r'RMSE\s*,\s*([0-9.eE+-]+)', text)
     if m:
         return float(m.group(1))
 
-    # 형식 2: [RMSE] 123.456
     m = re.search(r'\[RMSE\]\s*([0-9.eE+-]+)', text)
     if m:
         return float(m.group(1))
@@ -43,7 +41,6 @@ def collect_rmse(root_dir):
                     'error': str(e),
                 })
 
-    # RMSE 있는 것 먼저, 그 다음 값 기준 오름차순
     rows.sort(key=lambda x: (x['rmse'] == '', x['rmse'] if x['rmse'] != '' else float('inf')))
     return rows
 

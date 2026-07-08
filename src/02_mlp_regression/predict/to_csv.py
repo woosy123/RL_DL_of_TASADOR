@@ -1,16 +1,16 @@
 import csv
 
-# 텍스트 파일에서 데이터 읽기
+# Read data from the text file
 with open('result.txt', 'r') as txt_file:
     lines = txt_file.readlines()
 
-# CSV 파일로 저장할 데이터 준비
+# Prepare rows for CSV output
 data = []
 for line in lines:
-    columns = line.strip().split()  # 띄어쓰기로 분리
+    columns = line.strip().split()  # Split by whitespace
     data.append(columns)
 
-# CSV 파일로 저장
+# Write to CSV
 with open('cuda_result_1vcpu.csv', 'w', newline='') as csv_file:
     writer = csv.writer(csv_file)
     writer.writerows(data)

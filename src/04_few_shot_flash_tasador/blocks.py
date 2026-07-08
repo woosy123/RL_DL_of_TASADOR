@@ -71,11 +71,10 @@ class AttentionBlock(nn.Module):
         # input: (N, T, in_channels)
         N, T, _ = input.shape
 
-        # causal mask: 미래 토큰(i>j)을 막음 (upper triangular)
         mask = torch.triu(
             torch.ones((T, T), device=input.device, dtype=torch.bool),
             diagonal=1
-        )  # shape: (T, T), True인 곳을 -inf로
+        )
 
         keys = self.linear_keys(input)          # (N, T, key_size)
         query = self.linear_query(input)        # (N, T, key_size)
@@ -83,7 +82,6 @@ class AttentionBlock(nn.Module):
 
         temp = torch.bmm(query, keys.transpose(1, 2))  # (N, T, T)
 
-        # mask는 (T,T)이지만 (N,T,T)에 broadcast됨
         temp = temp.masked_fill(mask, -float('inf'))
 
         temp = F.softmax(temp / self.sqrt_key_size, dim=1)  # (N, T, T)

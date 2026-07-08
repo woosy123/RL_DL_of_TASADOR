@@ -51,7 +51,7 @@ print('rmse :',score_rmse)
     # Save
 #wb = load_workbook("./{}/m2_{}.xlsx".format(any, v))
 
-# 새로운 엑셀 파일 생성
+# Create a new Excel file
 output_file = "./data/{}/m2_{}.xlsx".format(any, v)
 wb = Workbook()
 ws = wb.active

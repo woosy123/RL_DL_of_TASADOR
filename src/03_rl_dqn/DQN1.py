@@ -16,14 +16,14 @@ from env_dqn import Environment
 
 env = Environment()
 
-# matplotlib 설정
+# matplotlib setup
 is_ipython = 'inline' in matplotlib.get_backend()
 if is_ipython:
     from IPython import display
 
 #plt.ion()
 
-# GPU를 사용할 경우
+# Use GPU when available
 # "cuda:0" if torch.cuda.is_available() else 
 device = torch.device("cpu" if torch.cuda.is_available() else "cpu")
 print(device)
@@ -36,7 +36,7 @@ class ReplayMemory(object):
         self.memory = deque([], maxlen=capacity)
 
     def push(self, *args):
-        """transition 저장"""
+        """Store a transition."""
         self.memory.append(Transition(*args))
 
     def sample(self, batch_size):
@@ -54,8 +54,8 @@ class DQN(nn.Module):
         self.layer3 = nn.Linear(64, 32)
         self.layer4 = nn.Linear(32, n_actions)
 
-    # 최적화 중에 다음 행동을 결정하기 위해서 하나의 요소 또는 배치를 이용해 호촐됩니다.
-    # ([[left0exp,right0exp]...]) 를 반환합니다.
+    # Called with one element or batch to choose the next action during optimization.
+    # Returns action values for each candidate action.
     def forward(self, x):
         x = F.relu(self.layer1(x))
         x = F.relu(self.layer2(x))
@@ -74,7 +74,7 @@ NUM_TIMESTEPS = 30
 TAU = 0.005
 LR = 1e-5
 
-# 상태 관측 횟수를 얻습니다.
+# Get the initial state observation.
 state, info = env.reset()
 
 policy_net = DQN(OBSERVATION_SPACE_DIM, ACTION_SPACE_DIM).to(device)
@@ -94,9 +94,9 @@ def select_action(state):
     steps_done += 1
     if sample > eps_threshold:
         with torch.no_grad():
-            # t.max (1)은 각 행의 가장 큰 열 값을 반환합니다.
-            # 최대 결과의 두번째 열은 최대 요소의 주소값이므로,
-            # 기대 보상이 더 큰 행동을 선택할 수 있습니다.
+            # t.max(1) returns the largest column value for each row.
+            # The second returned column is the argmax index,
+            # so it selects the action with the larger expected reward.
             return policy_net(state).max(1)[1].view(1, 1).to(device)
     else:
         return torch.tensor([[random.randrange(ACTION_SPACE_DIM)]], device=device, dtype=torch.long)
@@ -119,13 +119,13 @@ episode_time =[]
 #     plt.xlabel('Episode')
 #     plt.ylabel('rewards')
 #     plt.plot(durations_t.numpy())
-#     # 100개의 에피소드 평균을 가져 와서 도표 그리기
+#     # Plot the rolling mean over 100 episodes
 #     if len(durations_t) >= 100:
 #         means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
 #         means = torch.cat((torch.zeros(99), means))
 #         plt.plot(means.numpy())
 
-#     plt.pause(0.001)  # 도표가 업데이트되도록 잠시 멈춤
+#     plt.pause(0.001)  # Pause briefly so the plot can update
 #     if is_ipython:
 #         if not show_result:
 #             display.display(plt.gcf())
@@ -137,17 +137,17 @@ import pandas as pd
 
 now = time.strftime('%m_%d_%H_%M')
 
-# 파일명과 시트명 설정
+# Configure file and sheet names
 excel_file = f"{now}rt.xlsx"
 sheet_name = "episode_rewards"
 
-# 보상을 기록할 데이터프레임 생성 또는 엑셀 파일이 없는 경우 초기화
+# Create or initialize reward dataframe
 try:
     df = pd.read_excel(excel_file, sheet_name=sheet_name)
 except:
     df = pd.DataFrame(columns=["Episode", "Reward","time","network_throughput","vm_cpu_usage"])
 
-# 새로운 보상을 엑셀에 추가하는 함수
+# Append a new reward row to Excel
 def add_reward(episode, reward, time,network_throughput,vm_cpu_usage):
     df.loc[len(df)] = [episode, reward, time,network_throughput,vm_cpu_usage]
     df.to_excel(excel_file, sheet_name=sheet_name, index=False, engine="openpyxl")
@@ -158,12 +158,12 @@ def optimize_model(time_step):
     transitions = memory.sample(BATCH_SIZE)
 
     # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
-    # detailed explanation). 이것은 batch-array의 Transitions을 Transition의 batch-arrays로
-    # 전환합니다.
+    # detailed explanation). This converts a batch-array of Transitions
+    # into Transition arrays grouped by field.
     batch = Transition(*zip(*transitions))
 
-    # 최종이 아닌 상태의 마스크를 계산하고 배치 요소를 연결합니다
-    # (최종 상태는 시뮬레이션이 종료 된 이후의 상태)
+    # Compute the non-final-state mask and concatenate batch elements
+    # Final states are states after the simulation terminates
     non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
                                           batch.next_state)), device=device, dtype=torch.bool)
     non_final_next_states = torch.cat([s for s in batch.next_state
@@ -172,30 +172,30 @@ def optimize_model(time_step):
     action_batch = torch.cat(batch.action).to(device)
     reward_batch = torch.cat(batch.reward).to(device)
 
-    # Q(s_t, a) 계산 - 모델이 Q(s_t)를 계산하고, 취한 행동의 열을 선택합니다.
-    # 이들은 policy_net에 따라 각 배치 상태에 대해 선택된 행동입니다.
+    # Compute Q(s_t, a): the model computes Q(s_t), then selects the taken action column.
+    # These are the actions selected by policy_net for each batch state.
     state_action_values = policy_net(state_batch).gather(1, action_batch)
 
-    # 모든 다음 상태를 위한 V(s_{t+1}) 계산
-    # non_final_next_states의 행동들에 대한 기대값은 "이전" target_net을 기반으로 계산됩니다.
-    # max(1)[0]으로 최고의 보상을 선택하십시오.
-    # 이것은 마스크를 기반으로 병합되어 기대 상태 값을 갖거나 상태가 최종인 경우 0을 갖습니다.
+    # Compute V(s_{t+1}) for all next states
+    # Expected values for non_final_next_states are computed from the previous target_net.
+    # Select the best reward with max(1)[0].
+    # Values are merged by mask, using zero for final states.
     next_state_values = torch.zeros(BATCH_SIZE, device=device)
     with torch.no_grad():
         next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].detach()
     
-    # 기대 Q 값 계산
+    # Compute expected Q values
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
-    # Huber 손실 계산
+    # Compute Huber loss
     criterion = nn.SmoothL1Loss()
     loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
 
-    # 모델 최적화
+    # Optimize the model
     optimizer.zero_grad()
     loss.backward()
     
-    # 변화도 클리핑 바꿔치기
+    # Clip gradients
     torch.nn.utils.clip_grad_value_(policy_net.parameters(), 100)
     optimizer.step()
 
@@ -205,7 +205,7 @@ else:
     num_episodes = 100
 
 for i_episode in range(num_episodes):
-    # 환경과 상태 초기화
+    # Reset environment and state
     state, info = env.reset()
     state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
     episode_reward = 0
@@ -226,16 +226,16 @@ for i_episode in range(num_episodes):
         else:
             next_state = torch.tensor(observation, dtype=torch.float32, device=device).unsqueeze(0)
 
-        # 메모리에 변이 저장
+        # Store transition in replay memory
         memory.push(state, action, next_state, reward)
 
-        # 다음 상태로 이동
+        # Move to the next state
         state = next_state
         
-        # (정책 네트워크에서) 최적화 한단계 수행
+        # Run one optimization step on the policy network
         optimize_model(t+1)
 
-        # 목표 네트워크의 가중치를 소프트 업데이트
+        # Soft-update target network weights
         # θ′ ← τ θ + (1 −τ )θ′
         target_net_state_dict = target_net.state_dict()
         policy_net_state_dict = policy_net.state_dict()

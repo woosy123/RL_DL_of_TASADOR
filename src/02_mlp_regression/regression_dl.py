@@ -9,7 +9,6 @@ import os
 import time
 
 
-# 1. 트레이닝, 테스트 데이터
 csv_data = np.loadtxt('./old/m2_train_1vcpu_1000_.csv', delimiter=',')
 split = 0.70
 split = int(len(csv_data)*split)
@@ -39,7 +38,6 @@ y_test_tensor = torch.tensor(y_test, dtype=torch.float32, device=device)
 train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
 train_loader = DataLoader(train_dataset, batch_size=batch_size,shuffle=True)
 
-# 2. 모델
 class RegressionModel(nn.Module):
     def __init__(self, input_dim):
         super(RegressionModel, self).__init__()
@@ -97,17 +95,17 @@ with torch.no_grad():
     
 print(f"Root Mean Squared Error: {rmse:.4f}")
 
-# 파일명과 시트명 설정
+# Configure file and sheet names
 excel_file = f'{num_epochs}_result.xlsx'
 sheet_name = f"epoch_loss"
 
-# 보상을 기록할 데이터프레임 생성 또는 엑셀 파일이 없는 경우 초기화
+# Create or initialize reward dataframe
 try:
     df = pd.read_excel(excel_file, sheet_name=sheet_name)
 except:
     df = pd.DataFrame(columns=["Epoch", "loss","time"])
 
-# 새로운 보상을 엑셀에 추가하는 함수
+# Append a new reward row to Excel
 def add_reward(epoch, reward, time):
     df.loc[len(df)] = [epoch, reward, time]
     df.to_excel(excel_file, sheet_name=sheet_name, index=False, engine="openpyxl")

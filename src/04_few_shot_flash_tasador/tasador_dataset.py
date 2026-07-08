@@ -3,8 +3,6 @@ from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
 import numpy as np
 
-# query에서 사용할 feature들 (label cpu_quota 제외)
-# cpu_model은 문자열이라 cpu_model_id로 인코딩해서 숫자로 사용
 used_features = [
     "message_size",
     "network_throughput",
@@ -57,7 +55,6 @@ def _build_cpu_model_mapping(train_df: pd.DataFrame) -> dict:
 
 
 def _encode_cpu_model_id(df: pd.DataFrame, cpu_model_to_id: dict) -> pd.DataFrame:
-    # train에 없는 cpu_model이 test에 있을 수 있으므로 fallback id를 부여
     unknown_id = len(cpu_model_to_id)
     df = df.copy()
     df["cpu_model_id"] = df["cpu_model"].map(cpu_model_to_id).fillna(unknown_id).astype(int)
@@ -65,7 +62,7 @@ def _encode_cpu_model_id(df: pd.DataFrame, cpu_model_to_id: dict) -> pd.DataFram
 
 
 def _pick_nearest_unused_index(target_pos: int, used: set[int], n: int) -> int | None:
-    """target_pos 근처에서 아직 선택되지 않은 index를 가장 가까운 순으로 찾는다."""
+    """Helper function."""
     for d in range(0, n):
         for cand in (target_pos - d, target_pos + d):
             if 0 <= cand < n and cand not in used:
@@ -79,8 +76,8 @@ def _pick_nearest_unused_index_by_quota(
     used: set[int],
 ) -> int | None:
     """
-    quotas_sorted: cpu_quota 오름차순 정렬된 1D array
-    target_quota에 가장 가까운 (아직 안 쓴) 인덱스를 반환.
+
+
     """
     n = len(quotas_sorted)
     pos = int(np.searchsorted(quotas_sorted, target_quota, side="left"))
@@ -108,12 +105,12 @@ def _select_support_indices_by_quota(
     strategy: str = "uniform",
 ) -> list[int]:
     """
-    cpu_quota 오름차순 정렬된 gdf_sorted에서 support index 선택.
+
 
     strategy:
-      - 'uniform': 정렬된 "순서(인덱스 공간)"에서 균등 간격으로 k개 선택 (양끝 포함)
-      - 'quota_linspace': cpu_quota "값(min~max)" 범위를 균등 등분한 target에 가장 가까운 k개 선택 (양끝 포함)
-      - 'edge_median': (기존) 앞2+뒤2+중앙근처+추가균등
+
+
+
     """
     n = len(gdf_sorted)
     if n <= k:
@@ -121,7 +118,6 @@ def _select_support_indices_by_quota(
 
     quotas = gdf_sorted["cpu_quota"].to_numpy(dtype=np.float64)
 
-    # 1) 인덱스 공간(순서) 균등: "정렬해서 골고루"의 가장 직관적인 버전
     if strategy == "uniform":
         used: set[int] = set()
         positions = np.linspace(0, n - 1, k)
@@ -132,7 +128,6 @@ def _select_support_indices_by_quota(
             used.add(cand)
         return sorted(used) if len(used) == k else []
 
-    # 2) 값 공간(cpu_quota min~max) 균등: quota 값 범위를 직접 커버
     if strategy == "quota_linspace":
         used: set[int] = set()
         q_min, q_max = float(quotas[0]), float(quotas[-1])
@@ -144,7 +139,6 @@ def _select_support_indices_by_quota(
             used.add(idx)
         return sorted(used) if len(used) == k else []
 
-    # 3) 기존 edge_median 유지 (원하면 계속 쓸 수 있게)
     if strategy == "edge_median":
         med = float(np.median(quotas))
         used: set[int] = set()
@@ -205,10 +199,10 @@ def _select_query_indices(
     strategy: str = "uniform",
 ) -> list[int]:
     """
-    support를 제외한 query 인덱스 선택.
-    - max_queries=None: 전부 사용
-    - max_queries 정수: query를 해당 개수로 제한
-      strategy='uniform'이면 후보 인덱스들에서 균등 간격으로 샘플링
+
+
+
+
     """
     candidates = [i for i in range(n) if i not in support_set]
     if max_queries is None or len(candidates) <= max_queries:
@@ -255,11 +249,11 @@ def _build_processed_rows(
     query_strategy: str,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
-    파일 하나(df)로부터 supervised row들을 생성한다.
-    - 그룹별 cpu_quota 정렬
-    - support: num_samples 개 선택
-    - query: support 제외 나머지 (또는 max_queries_per_group로 제한)
-    - y는 y_scale로 나눠 정규화
+
+
+
+
+
     """
     grouped = df.groupby(group_cols, sort=True)
 
@@ -278,7 +272,7 @@ def _build_processed_rows(
         gdf = gdf.sort_values(["cpu_quota"], ascending=True).reset_index(drop=True)
         n = len(gdf)
         if n <= num_samples:
-            continue  # query 생성 불가
+            continue
 
         support_idx = _select_support_indices_by_quota(gdf, k=num_samples, strategy=support_strategy)
         if not support_idx:
@@ -286,7 +280,6 @@ def _build_processed_rows(
 
         support_df = gdf.iloc[support_idx].sort_values(["cpu_quota"], ascending=True)
 
-        # support 누적
         row_to_add = []
         for _, r in support_df.iterrows():
             row_to_add.extend([float(r[c]) for c in used_features])
@@ -326,9 +319,8 @@ class TasadorDatasetXSamplesDifferentAppsForTrainTestValidate(data.Dataset):
         target_transform=None,
         normalize_x: bool = True,
 
-        # ===== 추가 옵션 =====
         normalize_y: bool = True,
-        y_scale: float | None = None,  # None이면 train_df의 cpu_quota max로 자동
+        y_scale: float | None = None,
         support_strategy: str = "uniform",   # 'uniform' / 'quota_linspace' / 'edge_median'
         max_queries_per_group: int | None = None,
         query_strategy: str = "uniform",     # 'uniform' or 'random'
@@ -345,13 +337,11 @@ class TasadorDatasetXSamplesDifferentAppsForTrainTestValidate(data.Dataset):
         if not isinstance(num_samples, int) or num_samples <= 0:
             raise ValueError(f"num_samples must be a positive int, got {num_samples}")
 
-        # 1) 항상 train 파일로 mapping/scaler/y_scale 기준을 만든다
         train_path = f"{self.root}/{train_filename}"
         train_df = _load_and_clean_csv(train_path)
         cpu_model_to_id = _build_cpu_model_mapping(train_df)
         train_df = _encode_cpu_model_id(train_df, cpu_model_to_id)
 
-        # y_scale 결정 (train 기준)
         if normalize_y:
             if y_scale is None:
                 y_scale = float(train_df["cpu_quota"].max())
@@ -377,7 +367,6 @@ class TasadorDatasetXSamplesDifferentAppsForTrainTestValidate(data.Dataset):
         else:
             x_train = x_train_raw
 
-        # 2) mode에 따라 train/test를 파일 단위로 분리
         if self.mode == "train":
             self.x_train = x_train
             self.y_train = y_train
@@ -391,7 +380,7 @@ class TasadorDatasetXSamplesDifferentAppsForTrainTestValidate(data.Dataset):
             x_test_raw, y_test = _build_processed_rows(
                 test_df,
                 num_samples=num_samples,
-                y_scale=self.y_scale,  # train 기준 동일 스케일
+                y_scale=self.y_scale,
                 max_queries_per_group=max_queries_per_group,
                 support_strategy=support_strategy,
                 query_strategy=query_strategy,
@@ -434,7 +423,6 @@ class TasadorDatasetXSamplesDifferentAppsForTrainTestValidate(data.Dataset):
 
 
 if __name__ == "__main__":
-    # 예시: K=5, "오름차순 정렬 후 균등 분배" (기본 uniform)
     tr = TasadorDatasetXSamplesDifferentAppsForTrainTestValidate(
         num_samples=5,
         mode="train",
@@ -444,7 +432,7 @@ if __name__ == "__main__":
         normalize_x=True,
         normalize_y=True,
         max_queries_per_group=10,
-        support_strategy="uniform",      # <- 오름차순 정렬 + 균등 분배(인덱스 기준)
+        support_strategy="uniform",
         query_strategy="uniform",
     )
     te = TasadorDatasetXSamplesDifferentAppsForTrainTestValidate(
@@ -464,5 +452,4 @@ if __name__ == "__main__":
     x0, y0 = tr[0]
     print("x_dim:", x0.shape, "y(norm):", y0, "y(orig):", y0 * tr.y_scale)
 
-    # 만약 quota 값 범위(min~max) 균등 분배를 원하면 아래처럼:
     # support_strategy="quota_linspace"

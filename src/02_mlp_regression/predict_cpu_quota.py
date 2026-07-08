@@ -7,30 +7,30 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import math, csv, time
 
-# GPU 사용 가능 여부 확인
+# Check GPU availability
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
 
 file_name = "./m2_train_8vcpu_5000_config1_webserver"
 # file_name = "1vCPU_performance_metrics"
-# 데이터 로드
+# Load data
 data = pd.read_csv(f"{file_name}.csv") 
 
-# 입력 특성과 목표 값 분리
+# Split features and target
 X = data.drop(["cpu_quota"], axis=1).values
 y = data["cpu_quota"].values
 # X = data.drop(["cpu_quota","pps","VM_CPU_usage"], axis=1).values
 # y = data["cpu_quota"].values
 #X = data.drop(["CPU Quota","pps","VM CPU Usage"], axis=1).values
 #y = data["CPU Quota"].values
-# 특성 스케일링
+# Scale features
 scaler = MinMaxScaler()
 X_scaled = scaler.fit_transform(X)
 
-# 데이터 분할
+# Split data
 X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
 
-# 딥러닝 모델 정의
+# Define deep learning model
 class RegressionModel(nn.Module):
     def __init__(self, input_dim):
         super(RegressionModel, self).__init__()
@@ -50,7 +50,7 @@ class RegressionModel(nn.Module):
         x = self.fc6(x)
         return x
 
-# 모델을 GPU로 이동
+# Move model to device
 model = RegressionModel(input_dim=X_train.shape[1]).to(device)
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
@@ -92,17 +92,17 @@ with torch.no_grad():
     
 print(f"Root Mean Squared Error: {rmse:.4f},Running time: {(end-start):.4f}")
 
-# # 파일명과 시트명 설정
+# # Configure file and sheet names
 # excel_file = '1vcpu_result.xlsx'
 # sheet_name = "episode_rewards"
 
-# # 보상을 기록할 데이터프레임 생성 또는 엑셀 파일이 없는 경우 초기화
+# # Create or initialize reward dataframe
 # try:
 #     df = pd.read_excel(excel_file, sheet_name=sheet_name)
 # except:
 #     df = pd.DataFrame(columns=["Epoch", "loss","time"])
 
-# # 새로운 보상을 엑셀에 추가하는 함수
+# # Append a new reward row to Excel
 # def add_reward(epoch, reward, time):
 #     df.loc[len(df)] = [epoch, reward, time]
 #     df.to_excel(excel_file, sheet_name=sheet_name, index=False, engine="openpyxl")
@@ -110,7 +110,7 @@ print(f"Root Mean Squared Error: {rmse:.4f},Running time: {(end-start):.4f}")
 # add_reward(num_epochs,round(rmse,4),(end-start))
 
 
-# # 목표 CPU Quota 값을 예측하는 함수
+# # Predict target CPU quota
 # def predict_cpu_quota(network_throughput, message_size):
 #     input_data = np.array([[message_size, network_throughput]])
 #     scaled_input = scaler.transform(input_data)
@@ -118,14 +118,14 @@ print(f"Root Mean Squared Error: {rmse:.4f},Running time: {(end-start):.4f}")
 #     predicted_cpu_quota = model(scaled_input_tensor).item()
 #     return predicted_cpu_quota
 
-# # 목표 CPU Quota 값 예측
+# # Predict target CPU quota values
 # p_cpu_quota = []  
 # target_message_size = 64
 # for i in range(5):
-#     for target_network_throughput in range(100, 2001, 50): # 목표 network_throughput 값 설정
+#     for target_network_throughput in range(100, 2001, 50): # Set target network throughput
 #         predicted_cpu_quota = predict_cpu_quota(target_network_throughput, target_message_size)
 #         p_cpu_quota.append([target_network_throughput,target_message_size,int(predicted_cpu_quota)])
-#     target_message_size *= 2 # 목표 message_size 값 설정
+#     target_message_size *= 2 # Set target message size
 # df = pd.DataFrame(p_cpu_quota, columns=["network_SLO", "message_size", "cpu_quota"])
 # csv_file_path = f"{file_name}_{num_epochs}_output.csv"
 # df.to_csv(csv_file_path, index=False)
