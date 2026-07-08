@@ -27,10 +27,10 @@ The goal is to understand how each model learns the relationship between network
 │   ├── 07-experiment-runbook.md
 │   └── 08-data-format.md
 ├── src/
-│   ├── random_forest_tasador/
-│   ├── mlp_regression/
-│   ├── rl_dqn/
-│   └── few_shot_tasador/
+│   ├── 01_random_forest_tasador/
+│   ├── 02_mlp_regression/
+│   ├── 03_rl_dqn/
+│   └── 04_few_shot_flash_tasador/
 ├── configs/
 │   └── .env.example
 ├── scripts/
@@ -136,18 +136,24 @@ tc / vCPU-share baselines:
 
 The few-shot experiment is intentionally separated from Random Forest TASADOR. Random Forest learns a fixed regression function from a full dataset. Few-shot learning treats the small support set itself as part of the input, so models such as SNAIL or RNN/GRU are a better fit for this experiment.
 
-## Quick Start For Documentation Use
+## Quick Start
 
-1. Read [docs/01-system-overview.md](docs/01-system-overview.md) for the system architecture.
-2. Read model-specific notes:
-   - [Random Forest TASADOR](docs/02-random-forest-tasador.md)
-   - [MLP Regression](docs/03-mlp-regression.md)
-   - [RL DQN](docs/04-rl-dqn.md)
-   - [Few-shot TASADOR](docs/05-few-shot-tasador.md)
-3. Read [docs/07-experiment-runbook.md](docs/07-experiment-runbook.md) for the purpose, execution flow, commands, and outputs of each experiment.
-4. Copy `configs/.env.example` to `.env` only on a private machine.
-5. Fill `.env` with local VM and host settings.
-6. Use scripts under `scripts/` as sanitized templates, not as direct drop-in production code.
+Start from the numbered source folders. Each folder has a local `README.md` with the experiment purpose, execution order, required input files, and the script to run.
+
+1. [Random Forest TASADOR](src/01_random_forest_tasador/README.md)
+2. [MLP Regression](src/02_mlp_regression/README.md)
+3. [RL DQN](src/03_rl_dqn/README.md)
+4. [Few-shot FLASH TASADOR](src/04_few_shot_flash_tasador/README.md)
+
+For a private reproduction machine:
+
+```bash
+cp configs/.env.example .env
+```
+
+Fill `.env` with local VM and host settings. Do not commit `.env`, datasets, checkpoints, raw logs, or generated result files.
+
+The `docs/` directory is kept as background explanation. The runnable experiment entrypoints live next to the code under `src/`.
 
 ## Important Reproduction Notes
 

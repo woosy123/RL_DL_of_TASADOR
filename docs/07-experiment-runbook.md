@@ -64,13 +64,13 @@ bash scripts/collect/collect_quota_sweep.sh
 Equivalent original-code locations:
 
 ```text
-src/random_forest_tasador/test/collect.sh
-src/random_forest_tasador/test/run.sh
-src/random_forest_tasador/share/default.sh
-src/random_forest_tasador/tc/default.sh
-src/mlp_regression/netperf.py
-src/mlp_regression/netperf.sh
-src/mlp_regression/get_vnstat.sh
+src/01_random_forest_tasador/collect/collect.sh
+src/01_random_forest_tasador/collect/run.sh
+src/01_random_forest_tasador/share/default.sh
+src/01_random_forest_tasador/tc/default.sh
+src/02_mlp_regression/netperf.py
+src/02_mlp_regression/netperf.sh
+src/02_mlp_regression/get_vnstat.sh
 ```
 
 ### Outputs
@@ -112,7 +112,7 @@ In TASADOR's concatenated prediction, Model-G first predicts VM CPU usage. Model
 Original script flow:
 
 ```bash
-cd src/random_forest_tasador
+cd src/01_random_forest_tasador
 python3 generate_modelG_any.py
 python3 generate_modelH_any.py
 python3 evaluate_modelG_any.py
@@ -122,7 +122,7 @@ python3 evaluate_modelH_any.py
 Convenience wrapper in the original script tree:
 
 ```bash
-cd src/random_forest_tasador
+cd src/01_random_forest_tasador
 bash run_model.sh
 ```
 
@@ -135,8 +135,8 @@ File-level meaning:
 | `evaluate_modelG_any.py` | Evaluates the trained Model-G against held-out or split measurement data |
 | `evaluate_modelH_any.py` | Evaluates the trained Model-H and reports CPU quota prediction error |
 | `run_model.sh` | Runs Model-G and Model-H training and extracts training-time logs |
-| `test/collect.sh` | Collects raw quota-sweep measurement logs before model training |
-| `test/set_quota.sh` | Applies a quota to the host cgroup path |
+| `collect/collect.sh` | Collects raw quota-sweep measurement logs before model training |
+| `collect/set_quota.sh` | Applies a quota to the host cgroup path |
 | `tc/run.sh`, `tc/default.sh` | Runs traffic-control baseline experiments |
 | `share/run.sh`, `share/default.sh` | Runs vCPU-share/priority baseline experiments |
 
@@ -201,7 +201,7 @@ cpu_quota
 Original script flow:
 
 ```bash
-cd src/mlp_regression
+cd src/02_mlp_regression
 python3 regression_dl.py
 python3 predict_cpu_quota.py
 python3 predict_netperf.py
@@ -280,7 +280,7 @@ reward = -0.3 * abs(target - measured) otherwise
 Original script flow:
 
 ```bash
-cd src/rl_dqn
+cd src/03_rl_dqn
 
 # Terminal 1: continuously apply quota from set_cpu.txt
 bash set_cpu.sh
@@ -354,7 +354,7 @@ workload,vcpu,cpu_model,mem_gb,nic_gbps,switch_gbps,cpu_quota,message_size,netwo
 Original script flow:
 
 ```bash
-cd src/few_shot_tasador
+cd src/04_few_shot_flash_tasador
 
 python3 train.py \
   --dataset=tasador \
@@ -378,7 +378,7 @@ python3 test.py \
 Batch execution was organized through:
 
 ```bash
-cd src/few_shot_tasador
+cd src/04_few_shot_flash_tasador
 bash reproduce.sh
 bash test.sh
 ```
@@ -417,14 +417,14 @@ Compare TASADOR-style CPU quota control against network scheduling or vCPU prior
 Traffic control baseline:
 
 ```bash
-cd src/random_forest_tasador/tc
+cd src/01_random_forest_tasador/tc
 bash run.sh
 ```
 
 vCPU share/priority baseline:
 
 ```bash
-cd src/random_forest_tasador/share
+cd src/01_random_forest_tasador/share
 bash run.sh
 ```
 
@@ -464,7 +464,7 @@ python3 scripts/train/train_mlp.py --csv data/quota_sweep.csv --out models/mlp_c
 bash scripts/evaluate/evaluate_predicted_quota.sh results/predicted_quota.csv
 
 # 6. Run DQN only after collection/evaluation scripts are stable
-cd src/rl_dqn
+cd src/03_rl_dqn
 bash set_cpu.sh
 python3 DQN1.py
 ```

@@ -64,10 +64,10 @@ Excel 파일은 주로 RMSE, training time, episode reward 같은 결과 요약�
 ### 관련 코드
 
 ```text
-src/random_forest_tasador/test/
-src/random_forest_tasador/share/
-src/random_forest_tasador/tc/
-src/mlp_regression/netperf.py
+src/01_random_forest_tasador/collect/
+src/01_random_forest_tasador/share/
+src/01_random_forest_tasador/tc/
+src/02_mlp_regression/netperf.py
 scripts/collect/collect_quota_sweep.sh
 ```
 
@@ -94,10 +94,10 @@ Model-G가 먼저 VM CPU usage를 예측하고, Model-H가 그 값을 포함해 
 ### 실행하면 하는 일
 
 ```bash
-python3 src/random_forest_tasador/generate_modelG_any.py
-python3 src/random_forest_tasador/generate_modelH_any.py
-python3 src/random_forest_tasador/evaluate_modelG_any.py
-python3 src/random_forest_tasador/evaluate_modelH_any.py
+python3 src/01_random_forest_tasador/generate_modelG_any.py
+python3 src/01_random_forest_tasador/generate_modelH_any.py
+python3 src/01_random_forest_tasador/evaluate_modelG_any.py
+python3 src/01_random_forest_tasador/evaluate_modelH_any.py
 ```
 
 파일별 의미:
@@ -109,8 +109,8 @@ python3 src/random_forest_tasador/evaluate_modelH_any.py
 | `evaluate_modelG_any.py` | 학습된 Model-G가 VM CPU usage를 얼마나 잘 예측하는지 RMSE/RMSLE로 확인한다. |
 | `evaluate_modelH_any.py` | 학습된 Model-H가 CPU quota를 얼마나 잘 예측하는지 RMSE/RMSLE로 확인한다. |
 | `run_model.sh` | Model-G와 Model-H 학습을 연속 실행하고 training time 로그를 뽑는다. |
-| `test/collect.sh` | 모델 학습 전 quota sweep raw log를 수집한다. |
-| `test/set_quota.sh` | host cgroup에 CPU quota를 적용한다. |
+| `collect/collect.sh` | 모델 학습 전 quota sweep raw log를 수집한다. |
+| `collect/set_quota.sh` | host cgroup에 CPU quota를 적용한다. |
 | `tc/run.sh`, `tc/default.sh` | traffic control baseline 실험을 실행한다. |
 | `share/run.sh`, `share/default.sh` | vCPU share/priority baseline 실험을 실행한다. |
 
@@ -166,9 +166,9 @@ training time은 거의 선형적으로 증가
 ### 실행하면 하는 일
 
 ```bash
-python3 src/mlp_regression/regression_dl.py
-python3 src/mlp_regression/predict_cpu_quota.py
-python3 src/mlp_regression/predict_netperf.py
+python3 src/02_mlp_regression/regression_dl.py
+python3 src/02_mlp_regression/predict_cpu_quota.py
+python3 src/02_mlp_regression/predict_netperf.py
 ```
 
 첫 번째 스크립트는 MLP를 학습하고 RMSE를 계산한다. 두 번째는 target SLO에 대한 CPU quota를 예측한다. 세 번째는 예측된 quota를 실제 VM에 적용하고 throughput을 측정한다.
@@ -225,7 +225,7 @@ normalized bandwidth
 ### 실행하면 하는 일
 
 ```bash
-cd src/rl_dqn
+cd src/03_rl_dqn
 
 # Terminal 1
 bash set_cpu.sh
@@ -277,7 +277,7 @@ Sizeless baseline
 ### 실행하면 하는 일
 
 ```bash
-cd src/few_shot_tasador
+cd src/04_few_shot_flash_tasador
 
 python3 train.py --dataset=tasador --rnn --num_shots=5 ...
 python3 test.py --dataset=tasador --rnn --num_shots=5 ...
@@ -307,10 +307,10 @@ vCPU share:
 ### 실행하면 하는 일
 
 ```bash
-cd src/random_forest_tasador/tc
+cd src/01_random_forest_tasador/tc
 bash run.sh
 
-cd src/random_forest_tasador/share
+cd src/01_random_forest_tasador/share
 bash run.sh
 ```
 

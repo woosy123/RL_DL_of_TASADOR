@@ -89,14 +89,14 @@ Run these scripts when the quota-sweep CSV already exists and the goal is to tra
 
 | File | Purpose | Input | Output |
 |---|---|---|---|
-| `src/random_forest_tasador/generate_modelG_any.py` | Train Model-G | quota-sweep CSV with `CPU Quota`, `Message Size`, `Network Throughput`, `PPS`, `VM CPU Usage` | saved `m1_*` model and training-time printout |
-| `src/random_forest_tasador/generate_modelH_any.py` | Train Model-H | same quota-sweep CSV | saved `m2_*` model and training-time printout |
-| `src/random_forest_tasador/run_model.sh` | Convenience wrapper for Model-G and Model-H training | same CSV files expected by the Python scripts | `modelG.txt`, `modelH.txt`, `G_time.txt`, `H_time.txt` |
+| `src/01_random_forest_tasador/generate_modelG_any.py` | Train Model-G | quota-sweep CSV with `CPU Quota`, `Message Size`, `Network Throughput`, `PPS`, `VM CPU Usage` | saved `m1_*` model and training-time printout |
+| `src/01_random_forest_tasador/generate_modelH_any.py` | Train Model-H | same quota-sweep CSV | saved `m2_*` model and training-time printout |
+| `src/01_random_forest_tasador/run_model.sh` | Convenience wrapper for Model-G and Model-H training | same CSV files expected by the Python scripts | `modelG.txt`, `modelH.txt`, `G_time.txt`, `H_time.txt` |
 
 Original flow:
 
 ```bash
-cd src/random_forest_tasador
+cd src/01_random_forest_tasador
 python3 generate_modelG_any.py
 python3 generate_modelH_any.py
 ```
@@ -104,7 +104,7 @@ python3 generate_modelH_any.py
 or:
 
 ```bash
-cd src/random_forest_tasador
+cd src/01_random_forest_tasador
 bash run_model.sh
 ```
 
@@ -130,14 +130,14 @@ Run these scripts after the `m1_*` and `m2_*` models have been trained.
 
 | File | Purpose | What It Reports |
 |---|---|---|
-| `src/random_forest_tasador/evaluate_modelG_any.py` | Load Model-G and compare predicted VM CPU usage with measured VM CPU usage | RMSLE/RMSE and prediction table |
-| `src/random_forest_tasador/evaluate_modelH_any.py` | Load Model-H and compare predicted CPU quota with measured CPU quota | RMSLE/RMSE and prediction table |
-| `src/random_forest_tasador/b.py` | Small single-input inference example for CPU quota prediction | predicted CPU quota for a fixed target throughput/message size |
+| `src/01_random_forest_tasador/evaluate_modelG_any.py` | Load Model-G and compare predicted VM CPU usage with measured VM CPU usage | RMSLE/RMSE and prediction table |
+| `src/01_random_forest_tasador/evaluate_modelH_any.py` | Load Model-H and compare predicted CPU quota with measured CPU quota | RMSLE/RMSE and prediction table |
+| `src/01_random_forest_tasador/predict_single_quota.py` | Small single-input inference example for CPU quota prediction | predicted CPU quota for a fixed target throughput/message size |
 
 Example flow:
 
 ```bash
-cd src/random_forest_tasador
+cd src/01_random_forest_tasador
 python3 evaluate_modelG_any.py
 python3 evaluate_modelH_any.py
 ```
@@ -148,11 +148,11 @@ These scripts are used before training, when creating the measurement CSVs.
 
 | File | Purpose |
 |---|---|
-| `src/random_forest_tasador/test/collect.sh` | Sweep message sizes and CPU quotas, run VM workload, collect `vnstat`/`pidstat` logs |
-| `src/random_forest_tasador/test/run.sh` | Run one quota-specific measurement sequence |
-| `src/random_forest_tasador/test/set_quota.sh` | Apply a CPU quota to the configured cgroup path |
-| `src/random_forest_tasador/test/netperf.py` | Apply predicted/test quotas and run netperf-based evaluation |
-| `src/random_forest_tasador/vnstat.sh` | Helper for collecting network throughput/PPS from an interface |
+| `src/01_random_forest_tasador/collect/collect.sh` | Sweep message sizes and CPU quotas, run VM workload, collect `vnstat`/`pidstat` logs |
+| `src/01_random_forest_tasador/collect/run.sh` | Run one quota-specific measurement sequence |
+| `src/01_random_forest_tasador/collect/set_quota.sh` | Apply a CPU quota to the configured cgroup path |
+| `src/01_random_forest_tasador/collect/netperf.py` | Apply predicted/test quotas and run netperf-based evaluation |
+| `src/01_random_forest_tasador/vnstat.sh` | Helper for collecting network throughput/PPS from an interface |
 
 These scripts produce raw logs first. Those logs are then cleaned or converted into CSV rows such as:
 
@@ -166,10 +166,10 @@ These scripts are not Model-G/Model-H training scripts. They are baseline experi
 
 | File | Purpose |
 |---|---|
-| `src/random_forest_tasador/tc/run.sh` | Run traffic-control baseline over selected message sizes and bandwidth targets |
-| `src/random_forest_tasador/tc/default.sh` | Apply network rate limiting and collect throughput/CPU metrics |
-| `src/random_forest_tasador/share/run.sh` | Run vCPU-share/priority baseline over selected settings |
-| `src/random_forest_tasador/share/default.sh` | Apply CPU weight/share setting and collect throughput/CPU metrics |
+| `src/01_random_forest_tasador/tc/run.sh` | Run traffic-control baseline over selected message sizes and bandwidth targets |
+| `src/01_random_forest_tasador/tc/default.sh` | Apply network rate limiting and collect throughput/CPU metrics |
+| `src/01_random_forest_tasador/share/run.sh` | Run vCPU-share/priority baseline over selected settings |
+| `src/01_random_forest_tasador/share/default.sh` | Apply CPU weight/share setting and collect throughput/CPU metrics |
 
 These baselines answer a different question:
 

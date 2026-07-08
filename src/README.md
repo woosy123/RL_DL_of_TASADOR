@@ -1,63 +1,61 @@
-# Source Script Structure
+# Source Experiment Order
 
-This directory contains sanitized source scripts from the original experiments. Datasets, checkpoints, raw logs, virtual environments, and generated result files are intentionally excluded.
-
-## Directory Map
+`src/` contains the cleaned, sanitized experiment folders. Each folder has its own `README.md`, so the execution flow can be read next to the code.
 
 ```text
 src/
-├── random_forest_tasador/
-│   ├── generate_modelG_any.py
-│   ├── generate_modelH_any.py
-│   ├── evaluate_modelG_any.py
-│   ├── evaluate_modelH_any.py
-│   ├── run_model.sh
-│   ├── test/
-│   ├── share/
-│   ├── tc/
-│   ├── dynamic/
-│   └── legacy/supporting scripts
-├── mlp_regression/
-│   ├── regression_dl.py
-│   ├── predict_cpu_quota.py
-│   ├── predict_netperf.py
-│   ├── netperf.py
-│   ├── set_cpu.sh
-│   ├── netperf.sh
-│   └── get_vnstat.sh
-├── rl_dqn/
-│   ├── DQN1.py
-│   ├── env_dqn.py
-│   ├── script2.py
-│   ├── script8vcpu.py
-│   ├── set_cpu.sh
-│   ├── cpu_usage.sh
-│   └── script/
-└── few_shot_tasador/
-    ├── train.py
-    ├── test.py
-    ├── eval.py
-    ├── tasador_dataset.py
-    ├── snail.py
-    ├── blocks.py
-    ├── params.py
-    └── reproduce.sh
+├── 01_random_forest_tasador/
+├── 02_mlp_regression/
+├── 03_rl_dqn/
+└── 04_few_shot_flash_tasador/
 ```
+
+## 1. `01_random_forest_tasador`
+
+TASADOR 논문 방식에 가장 가까운 Random Forest 실험이다. Quota sweep CSV를 이용해 Model-G와 Model-H를 학습한다.
+
+```bash
+cd src/01_random_forest_tasador
+./run_paper_experiment.sh ../../data/quota_sweep.csv
+```
+
+자세한 실행 순서: [01_random_forest_tasador/README.md](01_random_forest_tasador/README.md)
+
+## 2. `02_mlp_regression`
+
+Random Forest 대신 PyTorch MLP로 CPU quota를 예측하는 deep learning baseline이다. hidden layer 수와 epoch 수를 바꾸어가며 RMSE와 training time을 비교했다.
+
+```bash
+cd src/02_mlp_regression
+./run_paper_experiment.sh ../../data/quota_sweep.csv 1200
+```
+
+자세한 실행 순서: [02_mlp_regression/README.md](02_mlp_regression/README.md)
+
+## 3. `03_rl_dqn`
+
+CSV로 미리 학습하는 방식이 아니라, VM workload를 실행한 상태에서 DQN agent가 CPU quota를 step 단위로 조절하는 online control 실험이다.
+
+```bash
+cd src/03_rl_dqn
+./run_paper_experiment.sh
+```
+
+자세한 실행 순서: [03_rl_dqn/README.md](03_rl_dqn/README.md)
+
+## 4. `04_few_shot_flash_tasador`
+
+FLASH 논문 GitHub 코드를 TASADOR quota dataset 형태로 수정한 few-shot/meta-learning 확장 실험이다. Random Forest TASADOR 본 실험은 아니고, 적은 support sample로 새로운 workload/config의 quota curve를 예측할 수 있는지 보는 비교 후보이다.
+
+```bash
+cd src/04_few_shot_flash_tasador
+./run_paper_experiment.sh tasador_wo_config3_8v.csv tasador_config3_8v.csv
+```
+
+자세한 실행 순서: [04_few_shot_flash_tasador/README.md](04_few_shot_flash_tasador/README.md)
 
 ## Sanitization
 
-The copied scripts were sanitized before publication:
-
-- real host/IP values were replaced with placeholders such as `${VM_HOST}` and `${VM_OR_TARGET_HOST}`
-- usernames were replaced with `${VM_USER}` or `${REMOTE_USER}`
-- private filesystem paths were replaced with `${EXPERIMENT_ROOT}` or `${LOCAL_WORKSPACE}`
-- cgroup paths were replaced with `${CPU_CGROUP_PATH}`
-- password-based SSH commands were converted to SSH-key placeholders where practical
-
-These scripts preserve the original experiment flow, but they may not run directly without adapting `.env` and local infrastructure paths.
-
-## Relationship To `scripts/`
-
-- `src/`: historical/sanitized experiment scripts, kept for transparency.
-- `scripts/`: cleaned templates intended as safer starting points for reproduction.
-
+- datasets, checkpoints, raw logs, virtual environments, generated results are excluded
+- hostnames, IP addresses, usernames, private paths, and cgroup paths are replaced with environment variables
+- `.env` must stay private; use `configs/.env.example` as a template
