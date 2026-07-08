@@ -1,6 +1,23 @@
-# Few-Shot TASADOR Experiments
+# Few-Shot / Meta-Learning Extension
 
-The few-shot experiments use a separate TASADOR case-study code path. This is separate from the original Random Forest TASADOR pipeline. It studies whether a model can infer the CPU quota for a query point after seeing only a few support samples from the same workload/hardware/message-size group.
+The few-shot experiments use a separate TASADOR case-study code path. This is not the original Random Forest TASADOR pipeline. It is an exploratory meta-learning extension that uses TASADOR-style collected data to test whether CPU quota prediction can be done from only a few support measurements.
+
+## Why This Is Not Random Forest TASADOR
+
+Random Forest TASADOR learns a fixed supervised regression model from a collected dataset:
+
+```text
+message_size, throughput, PPS, VM CPU usage -> CPU quota
+```
+
+Few-shot learning asks a different question:
+
+```text
+Given only K support measurements from a new workload/config,
+can the model infer the CPU quota for another query point?
+```
+
+In other words, the support set becomes part of the input. A standard Random Forest does not naturally adapt to a new support set at inference time. It can be forced into a baseline by flattening support samples into a long feature vector, but that makes the model sensitive to support order, fixed K, and weak at context adaptation. That is why this experiment uses sequence/context models such as SNAIL and RNN/GRU.
 
 ## Extended Dataset
 
@@ -57,4 +74,4 @@ The query contributes the same features except `cpu_quota`. The target is the qu
 
 ## Important Distinction
 
-This experiment does not directly control a VM during training. It is an offline regression/meta-learning experiment over previously collected CSV data.
+This experiment does not directly control a VM during training. It is an offline regression/meta-learning experiment over previously collected CSV data. Its goal is to reduce future data collection cost, not to replace the main Random Forest TASADOR pipeline directly.

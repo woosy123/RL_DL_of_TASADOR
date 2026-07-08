@@ -102,7 +102,33 @@ workload,vcpu,cpu_model,mem_gb,nic_gbps,switch_gbps,cpu_quota,message_size,netwo
 | Random Forest TASADOR | Offline supervised regression | bandwidth SLO, message size, PPS, VM CPU usage | Guest CPU usage and Host CPU quota | predicted quota is applied to host cgroup |
 | MLP Regression | Offline supervised regression | message size, throughput, PPS, VM CPU usage | CPU quota | predicted quota is applied by an evaluation script |
 | DQN | Online reinforcement learning | quota, message size, throughput, PPS, VM CPU usage | quota adjustment action | each step updates cgroup and observes new metrics |
-| Few-shot TASADOR | Offline meta/few-shot regression | support quota samples + query config | query CPU quota | no direct VM control during training |
+| Few-shot / Meta-learning extension | Offline meta/few-shot regression | support quota samples + query config | query CPU quota | no direct VM control during training |
+
+## Experiment Taxonomy
+
+The experiments are organized by the question they answer.
+
+```text
+Quota sweep:
+  What happens to throughput when CPU quota changes?
+
+Random Forest TASADOR:
+  Can an offline regression model translate a bandwidth SLO into Host CPU quota?
+
+MLP regression:
+  Can a neural network baseline predict CPU quota better or differently than Random Forest?
+
+DQN reinforcement learning:
+  Can an online agent adjust CPU quota step by step until the VM reaches the target bandwidth?
+
+Few-shot / Meta-learning extension:
+  Can a model predict the quota curve for a new workload/config after seeing only K support measurements?
+
+tc / vCPU-share baselines:
+  How do existing network scheduling or CPU-priority mechanisms compare with TASADOR-style quota prediction?
+```
+
+The few-shot experiment is intentionally separated from Random Forest TASADOR. Random Forest learns a fixed regression function from a full dataset. Few-shot learning treats the small support set itself as part of the input, so models such as SNAIL or RNN/GRU are a better fit for this experiment.
 
 ## Quick Start For Documentation Use
 

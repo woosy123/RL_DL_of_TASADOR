@@ -289,13 +289,15 @@ VM CPU usage per episode
 
 The original RL experiment depends on external processes. The quota loop, workload generator, and metric collection must be running consistently. This makes RL more sensitive to initial quota, target SLO, and timing than the offline RF/MLP experiments.
 
-## 5. Few-Shot TASADOR Experiment
+## 5. Few-Shot / Meta-Learning Extension
 
 ### Purpose
 
 Evaluate whether a meta-learning/few-shot model can predict CPU quota for a query point after observing only a small number of support samples from the same workload/hardware/message-size group.
 
-This is not the same as the Random Forest TASADOR pipeline. It is an offline few-shot regression experiment over collected CSV data.
+This is not the same as the Random Forest TASADOR pipeline. Random Forest TASADOR trains a fixed regression model from full quota-sweep data. The few-shot experiment instead gives the model a small support set at inference/training time and asks it to infer another quota point in that same context.
+
+This distinction is important because a standard Random Forest is not naturally a few-shot adaptation model. The few-shot scripts therefore use SNAIL/RNN-style context models rather than the Random Forest pipeline.
 
 ### Input Format
 
@@ -424,4 +426,3 @@ cd src/rl_dqn
 bash set_cpu.sh
 python3 DQN1.py
 ```
-
