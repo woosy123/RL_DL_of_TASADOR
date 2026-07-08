@@ -22,6 +22,11 @@ The goal is to understand how each model learns the relationship between network
 │   ├── 04-rl-dqn.md
 │   ├── 05-few-shot-tasador.md
 │   └── 06-reproduction-notes.md
+├── src/
+│   ├── random_forest_tasador/
+│   ├── mlp_regression/
+│   ├── rl_dqn/
+│   └── few_shot_tasador/
 ├── configs/
 │   └── .env.example
 ├── scripts/
@@ -35,6 +40,15 @@ The goal is to understand how each model learns the relationship between network
 │       └── evaluate_predicted_quota.sh
 └── .gitignore
 ```
+
+## `src/` vs `scripts/`
+
+This repository includes both the original script structure and cleaned reproduction templates.
+
+- `src/` contains sanitized copies of the experiment scripts, excluding datasets, checkpoints, raw logs, virtual environments, and generated results.
+- `scripts/` contains cleaner templates/wrappers for future reproduction.
+
+If you want to show what was actually done, point readers to [src/README.md](src/README.md). If you want to rerun a simplified version, start from `scripts/`.
 
 ## High-Level Workflow
 
