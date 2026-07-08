@@ -1,15 +1,14 @@
-# TASADOR VM CPU Quota Experiments
+# TASADOR Experiments
 
+This repository summarizes experiments for translating network bandwidth SLOs into VM CPU quota allocations. ([TASADOR paper](https://doi.org/10.1109/TCC.2026.3705455)) 
 
-This repository summarizes experiments for translating network bandwidth SLOs into VM CPU quota allocations. ([TASADOR paper](https://doi.org/10.1109/TCC.2026.3705455)) The experiments compare three approaches:
+The experiments compare three approaches:
 
 - Random Forest based TASADOR-style CPU translation
 - PyTorch MLP regression
 - DQN based reinforcement learning
 
 The goal is to understand how each model learns the relationship between network throughput and CPU quota, and how the predicted or selected quota is applied to a KVM VM through host-side cgroup control.
-
-> Security note: all hostnames, IP addresses, usernames, passwords, private paths, and cgroup paths are intentionally omitted. Use `configs/.env.example` as a template for local reproduction.
 
 ## Repository Layout
 
@@ -100,9 +99,9 @@ workload,vcpu,cpu_model,mem_gb,nic_gbps,switch_gbps,cpu_quota,message_size,netwo
 
 | Approach | Learning Type | Input | Output | VM Connection |
 |---|---|---|---|---|
-| Random Forest TASADOR | Offline supervised regression | bandwidth SLO, message size, PPS, VM CPU usage | Guest CPU usage and Host CPU quota | predicted quota is applied to host cgroup |
-| MLP Regression | Offline supervised regression | message size, throughput, PPS, VM CPU usage | CPU quota | predicted quota is applied by an evaluation script |
-| DQN | Online reinforcement learning | quota, message size, throughput, PPS, VM CPU usage | quota adjustment action | each step updates cgroup and observes new metrics |
+| 1. Random Forest TASADOR | Offline supervised regression | bandwidth SLO, message size, PPS, VM CPU usage | Guest CPU usage and Host CPU quota | predicted quota is applied to host cgroup |
+| 2. MLP Regression | Offline supervised regression | message size, throughput, PPS, VM CPU usage | CPU quota | predicted quota is applied by an evaluation script |
+| 3. DQN | Online reinforcement learning | quota, message size, throughput, PPS, VM CPU usage | quota adjustment action | each step updates cgroup and observes new metrics |
 | Few-shot / Meta-learning extension | Offline meta/few-shot regression | support quota samples + query config | query CPU quota | no direct VM control during training |
 
 ## Experiment Taxonomy
@@ -110,11 +109,14 @@ workload,vcpu,cpu_model,mem_gb,nic_gbps,switch_gbps,cpu_quota,message_size,netwo
 The experiments are organized by the question they answer.
 
 ```text
+Random Forest TASADOR:
+  Can an offline regression model translate a bandwidth SLO into Host CPU quota?
+
 Quota sweep:
   What happens to throughput when CPU quota changes?
 
-Random Forest TASADOR:
-  Can an offline regression model translate a bandwidth SLO into Host CPU quota?
+tc / vCPU-share baselines:
+  How do existing network scheduling or CPU-priority mechanisms compare with TASADOR-style quota prediction?
 
 MLP regression:
   Can a neural network baseline predict CPU quota better or differently than Random Forest?
@@ -124,9 +126,6 @@ DQN reinforcement learning:
 
 Few-shot / Meta-learning extension:
   Can a model predict the quota curve for a new workload/config after seeing only K support measurements?
-
-tc / vCPU-share baselines:
-  How do existing network scheduling or CPU-priority mechanisms compare with TASADOR-style quota prediction?
 ```
 
 The few-shot experiment is intentionally separated from Random Forest TASADOR. Random Forest learns a fixed regression function from a full dataset. Few-shot learning treats the small support set itself as part of the input, so models such as SNAIL or RNN/GRU are a better fit for this experiment.
