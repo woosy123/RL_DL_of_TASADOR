@@ -24,7 +24,8 @@ The goal is to understand how each model learns the relationship between network
 │   ├── 04-rl-dqn.md
 │   ├── 05-few-shot-tasador.md
 │   ├── 06-reproduction-notes.md
-│   └── 07-experiment-runbook.md
+│   ├── 07-experiment-runbook.md
+│   └── 08-data-format.md
 ├── src/
 │   ├── random_forest_tasador/
 │   ├── mlp_regression/
@@ -88,7 +89,7 @@ flowchart LR
 
 ## Dataset Schema
 
-Most experiments use the following CSV schema:
+Most experiments use the following CSV schema. This schema comes from the actual measurement CSV files and the `pandas.read_csv(...)` column names used by the training scripts. See [docs/08-data-format.md](docs/08-data-format.md) for details.
 
 ```csv
 cpu_quota,message_size,network_throughput,packet_per_sec,vm_cpu_usage

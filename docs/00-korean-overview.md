@@ -45,6 +45,8 @@ flowchart LR
 
 ### 수집하는 값
 
+이 형식은 임의로 만든 것이 아니라, 실제 실험 CSV 파일과 코드의 `pandas.read_csv(...)` 컬럼 이름에서 가져온 것이다. 일부 오래된 스크립트는 `CPU Quota`, `Message Size`, `Network Throughput`, `PPS`, `VM CPU Usage`처럼 대문자/공백이 있는 이름을 사용하고, 정리 문서에서는 같은 의미를 lowercase snake_case로 통일했다.
+
 ```text
 cpu_quota
 message_size
@@ -52,6 +54,8 @@ network_throughput
 packet_per_sec
 vm_cpu_usage
 ```
+
+Excel 파일은 주로 RMSE, training time, episode reward 같은 결과 요약을 저장하는 데 사용되었고, RF/MLP/few-shot의 주 학습 입력은 CSV였다. 자세한 내용은 [08-data-format.md](08-data-format.md)에 정리했다.
 
 ### 실행 목적
 
@@ -319,4 +323,3 @@ Few-shot / Meta-learning:
 tc / vCPU-share:
   기존 방식 baseline 비교
 ```
-

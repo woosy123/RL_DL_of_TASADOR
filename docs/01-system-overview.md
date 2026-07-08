@@ -37,6 +37,8 @@ flowchart TB
 cpu_quota,message_size,network_throughput,packet_per_sec,vm_cpu_usage
 ```
 
+This row format comes from the measurement CSV files consumed by the Random Forest and MLP scripts. Some older scripts use names such as `CPU Quota`, `Message Size`, `Network Throughput`, `PPS`, and `VM CPU Usage`; the cleaned documentation uses the equivalent lowercase snake_case names. See [08-data-format.md](08-data-format.md).
+
 ## Why Host-Side Control
 
 The goal is to avoid modifying applications or guest OS internals. Instead, the host controls how much CPU time the VM-related process can consume. This matches TASADOR's design goal: meeting network bandwidth requirements through VM-level CPU allocation.
