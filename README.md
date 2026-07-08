@@ -1,6 +1,7 @@
 # TASADOR VM CPU Quota Experiments
 
-This repository summarizes experiments for translating network bandwidth SLOs into VM CPU quota allocations. The experiments compare three approaches:
+
+This repository summarizes experiments for translating network bandwidth SLOs into VM CPU quota allocations. ([TASADOR paper](https://doi.org/10.1109/TCC.2026.3705455)) The experiments compare three approaches:
 
 - Random Forest based TASADOR-style CPU translation
 - PyTorch MLP regression
